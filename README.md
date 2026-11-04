@@ -1,5 +1,32 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Task list
+
+The home page lets you add tasks and check them complete (or uncheck them).
+Tasks and completion state are saved under `azilll.tasks.v1` in browser localStorage.
+They survive reloads in the same browser and origin; there is no account, server database,
+or cross-device sync. Clearing site data removes saved tasks.
+
+Blank tasks are rejected. Storage failures are shown explicitly without claiming a
+change was saved. Unreadable stored data is preserved and task editing is disabled
+rather than silently replacing it.
+
+## Verification
+
+```bash
+npm install
+npx playwright install chromium
+npm test
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Playwright starts the development server when necessary and tests desktop and mobile
+Chromium. Tests cover adding multiple tasks, trimming input, completion and reopening,
+persistence after reload, blank-input validation, corrupt storage, and save failures.
+No service keys are required.
+
 ## Getting Started
 
 First, run the development server:
