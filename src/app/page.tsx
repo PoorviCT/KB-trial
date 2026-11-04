@@ -3,6 +3,8 @@
 import { useEffect, useReducer, useRef, useState, type FormEvent } from "react";
 
 type Task = { id: string; text: string; isComplete: boolean };
+type TaskFilter = "All" | "Active" | "Completed";
+const TASK_FILTERS: TaskFilter[] = ["All", "Active", "Completed"];
 type TaskState = { tasks: Task[]; isReady: boolean; hasStorageError: boolean };
 const STORAGE_KEY = "azilll.tasks.v1";
 
@@ -29,6 +31,8 @@ export default function Home() {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [hasSaveError, setHasSaveError] = useState(false);
+  const [filter, setFilter] = useState<TaskFilter>("All");
+  const [feedback, setFeedback] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -61,6 +65,7 @@ export default function Home() {
 
   function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFeedback("");
     if (!text.trim()) {
       setError("Enter a task before adding it.");
       inputRef.current?.focus();
@@ -70,11 +75,13 @@ export default function Home() {
       id: crypto.randomUUID(), text: text.trim(), isComplete: false,
     }])) {
       setText("");
+      setFeedback(`Added “${text.trim()}” as an active task.${filter === "Completed" ? " Select Active or All to see it." : ""}`);
       inputRef.current?.focus();
     }
   }
 
   function toggleTask(id: string) {
+    setFeedback("");
     saveTasks(state.tasks.map((task) => task.id === id
       ? { ...task, isComplete: !task.isComplete } : task));
   }
@@ -82,6 +89,8 @@ export default function Home() {
   const completedCount = state.tasks.filter((task) => task.isComplete).length;
   const activeCount = state.tasks.length - completedCount;
   const isDisabled = !state.isReady || state.hasStorageError;
+  const visibleTasks = state.tasks.filter((task) => filter === "All"
+    || (filter === "Completed" ? task.isComplete : !task.isComplete));
 
   return (
     <main className="page">
@@ -95,13 +104,14 @@ export default function Home() {
           <label htmlFor="new-task">Add a task</label>
           <div className="add-row">
             <input ref={inputRef} id="new-task" name="task" value={text}
-              onChange={(event) => { setText(event.target.value); setError(""); }}
+              onChange={(event) => { setText(event.target.value); setError(""); setFeedback(""); }}
               placeholder="What needs to get done?" maxLength={500}
               disabled={isDisabled} aria-invalid={Boolean(error)}
               aria-describedby={error ? "task-error" : undefined} autoComplete="off" />
             <button type="submit" disabled={isDisabled}><span aria-hidden="true">＋</span> Add task</button>
           </div>
           {error && <p id="task-error" className="error" role="alert">{error}</p>}
+          <p className="task-feedback" role="status" aria-label="Task feedback">{feedback}</p>
         </form>
 
         {state.hasStorageError && <p className="error storage-error" role="alert">
@@ -116,14 +126,22 @@ export default function Home() {
         <p className="task-counts" role="status" aria-label="Task counts">
           {state.tasks.length} total · {activeCount} active · {completedCount} completed
         </p>
+        <div className="task-filters" role="group" aria-label="Filter tasks by status">
+          {TASK_FILTERS.map((option) => <button key={option} type="button"
+            aria-pressed={filter === option} aria-controls="task-results"
+            onClick={() => { setFilter(option); setFeedback(""); }}>{option}</button>)}
+        </div>
+        <div id="task-results">
         {!state.isReady ? <p className="empty-copy" role="status">Loading your tasks…</p>
-          : state.tasks.length === 0 ? <div className="empty-state">
+          : visibleTasks.length === 0 ? <div className="empty-state" role="status" aria-label="Task view">
               <span className="empty-icon" aria-hidden="true">✓</span>
-              <h3>A fresh start.</h3>
-              <p>Add your first task above.<br />Small steps make a big difference.</p>
+              <h3>{filter === "Active" ? "No active tasks." : filter === "Completed" ? "No completed tasks yet." : "A fresh start."}</h3>
+              <p>{filter === "Active" ? "You’re all caught up. Add a task above or view All."
+                : filter === "Completed" ? "Completed tasks will appear here. Select Active to work on a task."
+                : <>Add your first task above.<br />Small steps make a big difference.</>}</p>
             </div>
           : <ul className="task-list">
-              {state.tasks.map((task) => <li key={task.id} className={task.isComplete ? "is-complete" : ""}>
+              {visibleTasks.map((task) => <li key={task.id} className={task.isComplete ? "is-complete" : ""}>
                 <label className="task-item">
                   <input type="checkbox" checked={task.isComplete}
                     onChange={() => toggleTask(task.id)} disabled={isDisabled} />
@@ -131,6 +149,7 @@ export default function Home() {
                 </label>
               </li>)}
             </ul>}
+        </div>
         <footer className="storage-note">
           <span aria-hidden="true">↳</span>{" "}
           {!state.isReady ? "Checking browser storage…"
