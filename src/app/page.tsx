@@ -28,6 +28,7 @@ export default function Home() {
   });
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+  const [hasSaveError, setHasSaveError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -49,8 +50,10 @@ export default function Home() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       dispatch({ tasks, isReady: true, hasStorageError: false });
       setError("");
+      setHasSaveError(false);
       return true;
     } catch {
+      setHasSaveError(true);
       setError("Your change could not be saved. Check that browser storage is available, then try again.");
       return false;
     }
@@ -128,7 +131,13 @@ export default function Home() {
                 </label>
               </li>)}
             </ul>}
-        <footer className="storage-note"><span aria-hidden="true">↳</span> Saved in this browser. Still here when you return.</footer>
+        <footer className="storage-note">
+          <span aria-hidden="true">↳</span>{" "}
+          {!state.isReady ? "Checking browser storage…"
+            : state.hasStorageError ? "Saved data is protected. Reload after resolving the read error."
+            : hasSaveError ? "Last change not saved. Your previous saved tasks are unchanged."
+            : "Saved in this browser. Still here when you return."}
+        </footer>
       </section>
       <p className="page-note">Less noise. More done.</p>
     </main>

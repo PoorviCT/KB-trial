@@ -23,10 +23,10 @@ Playwright covers desktop Chromium and a mobile Chromium viewport. Each test has
 
 ## Baseline reconciliation
 
-This session's branch started from the template rather than the accepted task-list implementation. The baseline source and regression tests were recovered from PR #2 (commit `0bcc1107bf6ad40ab9b76a95558dad8d9f29d89a`), which is open and unmerged. This branch therefore targets `main` and restores that implementation before extending it. The storage key `little-list.tasks.v1` and task shape `{ id, text, completed }` remain compatible.
+This session's branch started from the template rather than the accepted task-list implementation. The baseline source and regression tests were recovered from PR #2 (commit `0bcc1107bf6ad40ab9b76a95558dad8d9f29d89a`), which is open and unmerged. This branch therefore targets `main` and restores that implementation before extending it. The storage key `azilll.tasks.v1` and task shape `{ id, text, isComplete }` remain compatible.
 
 There are no accepted design or architecture artifacts. The prior responsive styling is preserved; formal mockup comparison remains unavailable.
 
 ## Data
 
-Tasks stay in localStorage on the current browser and origin. There is no account or server sync. Storage failures are shown explicitly; unreadable stored data is not overwritten. A preview on another origin does not have access to an earlier preview's tasks.
+Tasks stay in localStorage on the current browser and origin. There is no account or server sync. Storage failures are shown explicitly; unreadable stored data is not overwritten. The saved confirmation is suppressed on read or write errors. A failed change leaves both the previous list and its stored value intact; retrying after storage recovers can save the change. Invalid JSON, invalid task shapes, blank text and duplicate IDs block writes to protect existing data. A preview on another origin does not have access to an earlier preview's tasks.
