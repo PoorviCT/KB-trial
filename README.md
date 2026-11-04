@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Little list
 
-## Getting Started
+A browser-local task list built with Next.js and React. Add a trimmed, nonblank task, complete it or reopen it, and see total, active and completed counts.
 
-First, run the development server:
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev -- --hostname 0.0.0.0
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Verification
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run typecheck
+npm run build
+# Run against an already running app:
+BASE_URL=http://localhost:3000 npm run test:e2e
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Playwright covers desktop Chromium and a mobile Chromium viewport. Each test has isolated browser storage.
 
-## Learn More
+## Baseline reconciliation
 
-To learn more about Next.js, take a look at the following resources:
+This session's branch started from the template rather than the accepted task-list implementation. The baseline source and regression tests were recovered from PR #2 (commit `0bcc1107bf6ad40ab9b76a95558dad8d9f29d89a`), which is open and unmerged. This branch therefore targets `main` and restores that implementation before extending it. The storage key `little-list.tasks.v1` and task shape `{ id, text, completed }` remain compatible.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+There are no accepted design or architecture artifacts. The prior responsive styling is preserved; formal mockup comparison remains unavailable.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tasks stay in localStorage on the current browser and origin. There is no account or server sync. Storage failures are shown explicitly; unreadable stored data is not overwritten. A preview on another origin does not have access to an earlier preview's tasks.
